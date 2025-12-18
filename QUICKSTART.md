@@ -16,15 +16,15 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-编辑 `.env` 文件：
+编辑 `.env` 文件，填入你的 API Token：
 
 ```env
-AI_API_TOKEN=spsw.7464b7d51e71c92311bf76c528192413
-AI_API_BASE_URL=http://your_server_ip/api/v1
-AI_API_TIMEOUT=30
+AI_API_TOKEN=spsw.your_token_here
 ```
 
-> **注意**: 请将 `your_server_ip` 替换为实际的服务器地址。Token可以从 `ai_api_info.txt` 中获取。
+> **提示**:
+> - SDK 已内置默认的 API 服务地址，无需配置 `AI_API_BASE_URL`
+> - 如需使用自定义服务地址，可选配置 `AI_API_BASE_URL=http://your_custom_server/api/v1`
 
 ## 步骤3: 运行你的第一个请求
 

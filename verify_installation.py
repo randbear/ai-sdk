@@ -116,14 +116,14 @@ def verify_imports():
 
         load_dotenv()
         token = os.getenv("AI_API_TOKEN")
-        base_url = os.getenv("AI_API_BASE_URL")
 
-        if token and base_url:
-            print("✅ API Token 和 Base URL 已配置")
+        if token:
+            print("✅ API Token 已配置")
+            print("   (SDK 已内置默认服务地址，无需配置 base_url)")
             checks.append(True)
         else:
             print("⚠️  .env 文件存在但配置不完整")
-            print("   请确保配置了 AI_API_TOKEN 和 AI_API_BASE_URL")
+            print("   请确保配置了 AI_API_TOKEN")
             checks.append(False)
     elif has_example:
         print("⚠️  .env 文件不存在")

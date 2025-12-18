@@ -68,12 +68,12 @@ pip install -e .
 cp .env.example .env
 ```
 
-2. 编辑 `.env` 文件，填入你的配置：
+2. 编辑 `.env` 文件，填入你的 API Token：
 ```env
 AI_API_TOKEN=spsw.your_token_here
-AI_API_BASE_URL=http://your_server_ip/api/v1
-AI_API_TIMEOUT=30
 ```
+
+> SDK 已内置默认的 API 服务地址，无需配置 base_url。如需使用自定义服务地址，可选配置 `AI_API_BASE_URL`。
 
 ### 基础使用
 
@@ -337,11 +337,11 @@ python examples/advanced_usage.py
 # 必填：API Token
 AI_API_TOKEN=spsw.your_token_here
 
-# 必填：API基础URL
-AI_API_BASE_URL=http://your_server_ip/api/v1
+# 可选：自定义 API 服务地址（SDK 已内置默认地址）
+# AI_API_BASE_URL=http://your_custom_server/api/v1
 
-# 可选：请求超时时间（秒）
-AI_API_TIMEOUT=30
+# 可选：请求超时时间（秒），默认30秒
+# AI_API_TIMEOUT=30
 ```
 
 ### 代码配置
@@ -351,10 +351,16 @@ AI_API_TIMEOUT=30
 ```python
 from ai_sdk import AIClient
 
+# 只需传入 Token，SDK 自动使用内置服务地址
+client = AIClient(api_token="spsw.your_token")
+
+# 或自定义超时时间
+client = AIClient(api_token="spsw.your_token", timeout=60)
+
+# 如需使用自定义服务地址（可选）
 client = AIClient(
     api_token="spsw.your_token",
-    base_url="http://your_server/api/v1",
-    timeout=60
+    base_url="http://your_custom_server/api/v1"
 )
 ```
 

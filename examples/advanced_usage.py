@@ -104,18 +104,17 @@ def example_custom_configuration():
     print("\n[示例4] 自定义配置")
     print("-" * 50)
 
-    # 方式1: 通过参数传入
+    # 方式1: 通过参数传入（SDK 已内置默认服务地址）
     client = AIClient(
         api_token="spsw.your_token_here",
-        base_url="http://your_server/api/v1",
         timeout=60,  # 60秒超时
     )
 
     # 方式2: 通过环境变量（推荐）
     # 在.env文件中设置：
     # AI_API_TOKEN=spsw.your_token
-    # AI_API_BASE_URL=http://your_server/api/v1
-    # AI_API_TIMEOUT=30
+    # 可选：自定义服务地址
+    # AI_API_BASE_URL=http://your_custom_server/api/v1
 
     # client = AIClient()  # 自动从环境变量读取
 

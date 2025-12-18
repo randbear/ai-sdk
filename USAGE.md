@@ -18,19 +18,19 @@ pip install -r requirements.txt
 
 ### 第二步：配置API
 
-根据 `ai_api_info.txt` 中的信息配置环境变量：
+配置你的 API Token：
 
 ```bash
 cp .env.example .env
 ```
 
-编辑 `.env` 文件：
+编辑 `.env` 文件，填入你的 API Token：
 
 ```env
-AI_API_TOKEN=spsw.7464b7d51e71c92311bf76c528192413
-AI_API_BASE_URL=http://156.254.5.245:8089/api/v1
-AI_API_TIMEOUT=30
+AI_API_TOKEN=spsw.your_token_here
 ```
+
+> **提示**: SDK 已内置默认服务地址，无需配置 `AI_API_BASE_URL`。如需使用自定义服务地址，可选配置该环境变量。
 
 ### 第三步：验证安装
 
@@ -404,9 +404,10 @@ python verify_installation.py
 **错误**: `APIConnectionError: 网络连接错误`
 
 **解决方案**:
-1. 检查 `AI_API_BASE_URL` 是否正确
-2. 确认服务器是否可访问
-3. 检查网络连接
+1. SDK 使用内置的默认服务地址，一般无需配置
+2. 如使用了自定义 `AI_API_BASE_URL`，请检查地址是否正确
+3. 确认服务器是否可访问
+4. 检查网络连接
 
 ### 问题4: 请求超时
 

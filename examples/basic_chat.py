@@ -21,7 +21,7 @@ def main():
     """基础聊天示例"""
 
     # 初始化客户端
-    # 确保已经设置了环境变量 AI_API_TOKEN 和 AI_API_BASE_URL
+    # 确保已经设置了环境变量 AI_API_TOKEN（SDK 已内置默认服务地址）
     # 或者在.env文件中配置
     client = AIClient()
 

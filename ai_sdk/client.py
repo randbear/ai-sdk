@@ -37,10 +37,7 @@ class AIClient:
         client = AIClient()
 
         # 方式2: 直接传入参数
-        client = AIClient(
-            api_token="spsw.your_token",
-            base_url="http://your_server/api/v1"
-        )
+        client = AIClient(api_token="spsw.your_token")
 
         # 发起chat completion请求
         response = client.chat.completions.create(
@@ -63,27 +60,28 @@ class AIClient:
 
         Args:
             api_token: API Token，如果不提供则从环境变量AI_API_TOKEN读取
-            base_url: API基础URL，如果不提供则从环境变量AI_API_BASE_URL读取
+            base_url: API基础URL（可选），默认使用内置的服务地址
             timeout: 请求超时时间（秒），默认30秒
 
         Raises:
             AuthenticationError: Token未提供或无效
-            InvalidRequestError: 配置错误
         """
+        # 默认的 API base URL
+        DEFAULT_BASE_URL = "http://156.254.5.245:8089/api/v1"
+
         # 获取配置
         self.api_token = api_token or os.getenv("AI_API_TOKEN")
-        self.base_url = (base_url or os.getenv("AI_API_BASE_URL", "")).rstrip("/")
+        self.base_url = (
+            base_url or
+            os.getenv("AI_API_BASE_URL") or
+            DEFAULT_BASE_URL
+        ).rstrip("/")
         self.timeout = timeout
 
         # 验证配置
         if not self.api_token:
             raise AuthenticationError(
                 "API Token未提供。请设置AI_API_TOKEN环境变量或在初始化时传入api_token参数"
-            )
-
-        if not self.base_url:
-            raise InvalidRequestError(
-                "API Base URL未提供。请设置AI_API_BASE_URL环境变量或在初始化时传入base_url参数"
             )
 
         # 创建session

@@ -43,8 +43,9 @@ pip install git+https://github.com/randbear/ai-sdk.git
 
 ```env
 AI_API_TOKEN=your_token_here
-AI_API_BASE_URL=http://your_server/api/v1
 ```
+
+> SDK 已内置默认服务地址，无需配置 base_url
 
 ### 使用
 

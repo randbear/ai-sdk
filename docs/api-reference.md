@@ -19,7 +19,7 @@ AIClient(
 **参数**:
 
 - `api_token` (str, optional): API Token，默认从环境变量 `AI_API_TOKEN` 读取
-- `base_url` (str, optional): API 基础 URL，默认从环境变量 `AI_API_BASE_URL` 读取
+- `base_url` (str, optional): API 基础 URL（可选），SDK 已内置默认服务地址
 - `timeout` (int, optional): 请求超时时间（秒），默认 30 秒
 
 **示例**:
@@ -29,10 +29,15 @@ AIClient(
 client = AIClient()
 
 # 或直接传入参数
+client = AIClient(api_token="spsw.your_token")
+
+# 自定义超时时间
+client = AIClient(api_token="spsw.your_token", timeout=60)
+
+# 使用自定义服务地址（可选）
 client = AIClient(
     api_token="spsw.your_token",
-    base_url="http://your_server/api/v1",
-    timeout=60
+    base_url="http://your_custom_server/api/v1"
 )
 ```
 
@@ -354,23 +359,26 @@ except AIAPIError as e:
 
 ## 环境变量
 
-| 变量名 | 说明 | 示例 |
-|-------|------|------|
-| `AI_API_TOKEN` | API Token | `spsw.xxxxx` |
-| `AI_API_BASE_URL` | API 基础 URL | `http://server/api/v1` |
-| `AI_API_TIMEOUT` | 请求超时时间（秒） | `30` |
+| 变量名 | 说明 | 必需 | 示例 |
+|-------|------|------|------|
+| `AI_API_TOKEN` | API Token | 是 | `spsw.xxxxx` |
+| `AI_API_BASE_URL` | API 基础 URL | 否 | `http://server/api/v1` |
+| `AI_API_TIMEOUT` | 请求超时时间（秒） | 否 | `30` |
+
+> **提示**: SDK 已内置默认服务地址，`AI_API_BASE_URL` 为可选配置
 
 配置方式：
 
 ```bash
 # 方式 1: 环境变量
 export AI_API_TOKEN=spsw.your_token
-export AI_API_BASE_URL=http://your_server/api/v1
 
 # 方式 2: .env 文件
 # 创建 .env 文件并添加：
 AI_API_TOKEN=spsw.your_token
-AI_API_BASE_URL=http://your_server/api/v1
+
+# 可选：使用自定义服务地址
+# AI_API_BASE_URL=http://your_custom_server/api/v1
 ```
 
 ---
