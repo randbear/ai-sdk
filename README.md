@@ -2,6 +2,13 @@
 
 一个兼容OpenAI SDK接口风格的AI API客户端，支持元宝和Gemini模型，提供简洁易用的Python接口。
 
+[![Documentation](https://img.shields.io/badge/docs-online-blue)](https://randbear.github.io/ai-sdk/)
+[![GitHub](https://img.shields.io/badge/GitHub-randbear%2Fai--sdk-blue?logo=github)](https://github.com/randbear/ai-sdk)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)](https://www.python.org/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+📖 **[在线文档](https://randbear.github.io/ai-sdk/)** | 🚀 **[快速开始](#快速开始)** | 💡 **[使用示例](#使用示例)**
+
 ## 特性
 
 - ✅ **兼容OpenAI SDK** - 熟悉的API接口，快速上手
@@ -16,28 +23,35 @@
 
 ## 快速开始
 
-### 安装方式
+### 安装
 
-#### 方式 1: 从 GitHub 私有仓库安装（推荐）
+#### 方式 1: 从 GitHub 安装（推荐）
 
 ```bash
-# 设置 GitHub Token
-export GITHUB_TOKEN=your_github_token
-
 # 安装最新版
-pip install git+https://${GITHUB_TOKEN}@github.com/YOUR_USERNAME/ai-sdk.git
+pip install git+https://github.com/randbear/ai-sdk.git
 
-# 或安装特定版本
-pip install git+https://${GITHUB_TOKEN}@github.com/YOUR_USERNAME/ai-sdk.git@v0.1.0
+# 或安装特定版本（推荐用于生产环境）
+pip install git+https://github.com/randbear/ai-sdk.git@v0.1.0
 ```
 
-> 📖 详细的发布和安装指南见 [PUBLISH_GUIDE.md](PUBLISH_GUIDE.md) 或 [GITHUB_SETUP.md](GITHUB_SETUP.md)
+**在 requirements.txt 中使用：**
+
+```txt
+# 安装最新版
+git+https://github.com/randbear/ai-sdk.git
+
+# 或指定版本
+git+https://github.com/randbear/ai-sdk.git@v0.1.0
+```
+
+> 📖 更多安装方式见 [在线文档 - 快速开始](https://randbear.github.io/ai-sdk/quickstart/)
 
 #### 方式 2: 本地开发安装
 
 ```bash
 # 克隆仓库
-git clone https://github.com/YOUR_USERNAME/ai-sdk.git
+git clone https://github.com/randbear/ai-sdk.git
 cd ai-sdk
 
 # 安装依赖
@@ -166,7 +180,23 @@ with AIClient() as client:
     )
 ```
 
-### 4. 启用深度研究
+### 4. 图片生成
+
+```python
+from ai_sdk import AIClient
+
+with AIClient() as client:
+    response = client.chat.completions.create(
+        model="yuanbao",
+        messages=[
+            {"role": "user", "content": "生成一张未来城市的图片"}
+        ],
+        generate_image=True  # 启用图片生成
+    )
+    print(response.choices[0].message.content)
+```
+
+### 5. 启用深度研究
 
 ```python
 from ai_sdk import AIClient
@@ -182,7 +212,7 @@ with AIClient() as client:
     print(response.choices[0].message.content)
 ```
 
-### 5. 切换模型
+### 6. 切换模型
 
 ```python
 from ai_sdk import AIClient
@@ -201,7 +231,7 @@ with AIClient() as client:
     )
 ```
 
-### 6. 错误处理
+### 7. 错误处理
 
 ```python
 from ai_sdk import (
@@ -228,7 +258,7 @@ except AIAPIError as e:
     print(f"API错误: {e}")
 ```
 
-### 7. 任务管理
+### 8. 任务管理
 
 ```python
 from ai_sdk import AIClient
@@ -255,6 +285,7 @@ with AIClient() as client:
 
 - `basic_chat.py` - 基础对话示例
 - `image_analysis.py` - 图片分析示例
+- `image_generation.py` - 图片生成示例
 - `advanced_usage.py` - 高级用法示例
 
 运行示例：
@@ -266,75 +297,35 @@ python examples/basic_chat.py
 # 运行图片分析示例
 python examples/image_analysis.py
 
+# 运行图片生成示例
+python examples/image_generation.py
+
 # 运行高级用法示例
 python examples/advanced_usage.py
 ```
 
+📖 **更多示例和详细说明，请查看 [在线文档](https://randbear.github.io/ai-sdk/)**
+
 ## API参考
 
-### AIClient
+### 核心类和方法
 
-主客户端类，用于与API交互。
+- `AIClient` - 主客户端类
+- `chat.completions.create()` - 创建对话请求
+- `tasks.retrieve()` - 查询任务结果
+- `ChatMessage` - 消息对象
+- `ChatCompletion` - 响应对象
 
-**初始化参数：**
+### 异常类型
 
-- `api_token` (str, optional): API Token，默认从环境变量 `AI_API_TOKEN` 读取
-- `base_url` (str, optional): API基础URL，默认从环境变量 `AI_API_BASE_URL` 读取
-- `timeout` (int, optional): 请求超时时间（秒），默认30秒
+- `AIAPIError` - 基础异常类
+- `AuthenticationError` - 认证错误
+- `InvalidRequestError` - 请求参数错误
+- `APIConnectionError` - 网络连接错误
+- `RateLimitError` - 请求频率限制错误
+- `TimeoutError` - 请求超时错误
 
-**方法：**
-
-- `chat.completions.create()`: 创建chat completion
-- `tasks.retrieve(task_id)`: 查询任务结果
-- `close()`: 关闭客户端，释放资源
-
-### chat.completions.create()
-
-创建chat completion请求。
-
-**参数：**
-
-- `model` (str): 模型名称，可选 "yuanbao" 或 "gemini"
-- `messages` (List[ChatMessage]): 对话消息列表
-- `image_url` (str, optional): 图片URL
-- `image_data` (str, optional): 图片Base64数据
-- `deep_research` (bool, optional): 是否启用深度研究，默认False
-- `generate_image` (bool, optional): 是否生成图片，默认False
-
-**返回：**
-
-- `ChatCompletion`: 包含生成结果的响应对象
-
-### ChatMessage
-
-对话消息对象。
-
-**字段：**
-
-- `role` (str): 消息角色，可选 "user", "assistant", "system"
-- `content` (str): 消息内容
-
-### ChatCompletion
-
-Chat completion响应对象。
-
-**字段：**
-
-- `id` (str): 任务ID
-- `object` (str): 对象类型，值为 "chat.completion"
-- `created` (int): 创建时间戳
-- `model` (str): 使用的模型
-- `choices` (List[Choice]): 生成结果列表
-- `usage` (Usage): Token使用统计
-
-## 异常类型
-
-- `AIAPIError`: 基础异常类
-- `AuthenticationError`: 认证错误
-- `InvalidRequestError`: 请求参数错误
-- `APIConnectionError`: 网络连接错误
-- `RateLimitError`: 请求频率限制错误
-- `TimeoutError`: 请求超时错误
+📖 **完整的 API 参考文档请访问 [在线文档 - API参考](https://randbear.github.io/ai-sdk/api-reference/)**
 
 ## 配置说明
 
@@ -465,9 +456,22 @@ MIT License
 - 支持深度研究模式
 - 完善的错误处理和类型提示
 
-## 联系方式
+## 文档和支持
+
+### 完整文档
+
+📖 **在线文档**: https://randbear.github.io/ai-sdk/
+
+- [快速开始](https://randbear.github.io/ai-sdk/quickstart/) - 5分钟快速上手指南
+- [使用手册](https://randbear.github.io/ai-sdk/usage/) - 完整的功能使用文档
+- [API 参考](https://randbear.github.io/ai-sdk/api-reference/) - 详细的API文档
+- [图片生成指南](https://randbear.github.io/ai-sdk/image-generation/) - AI图片生成专题
+- [示例代码](https://randbear.github.io/ai-sdk/examples/basic-chat/) - 丰富的示例程序
+
+### 获取帮助
 
 如有问题或建议，请通过以下方式联系：
 
-- 提交Issue: [GitHub Issues](https://github.com/your-repo/issues)
-- 查看文档: [API文档](https://docs.apipost.net/docs/detail/52c44bf47843000)
+- 提交Issue: [GitHub Issues](https://github.com/randbear/ai-sdk/issues)
+- 查看在线文档: [AI SDK 文档](https://randbear.github.io/ai-sdk/)
+- GitHub仓库: [randbear/ai-sdk](https://github.com/randbear/ai-sdk)
