@@ -5,21 +5,29 @@
 [![Documentation](https://img.shields.io/badge/docs-online-blue)](https://randbear.github.io/ai-sdk/)
 [![GitHub](https://img.shields.io/badge/GitHub-randbear%2Fai--sdk-blue?logo=github)](https://github.com/randbear/ai-sdk)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python)](https://www.python.org/)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](./test_results.md)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-📖 **[在线文档](https://randbear.github.io/ai-sdk/)** | 🚀 **[快速开始](#快速开始)** | 💡 **[使用示例](#使用示例)**
+📖 **[在线文档](https://randbear.github.io/ai-sdk/)** | 🚀 **[快速开始](#快速开始)** | 💡 **[使用示例](#使用示例)** | ✅ **[测试结果](./test_results.md)**
 
 ## 特性
+
+### 核心功能 (已测试 ✅)
+
+- ✅ **生文功能** - 基于上下文的智能对话生成 ([测试通过](./test_results.md#1-生文功能测试))
+- ✅ **生图功能** - AI图片生成，返回图片URL ([测试通过](./test_results.md#2-生图功能测试))
+- ✅ **理解图功能** - 图片内容识别与分析 ([测试通过](./test_results.md#3-理解图功能测试))
+
+### SDK特性
 
 - ✅ **兼容OpenAI SDK** - 熟悉的API接口，快速上手
 - ✅ **类型提示完善** - 完整的类型注解，IDE友好
 - ✅ **错误处理健全** - 详细的异常类型和错误信息
 - ✅ **环境变量管理** - 安全地管理API Token等敏感信息
 - ✅ **多模型支持** - 支持元宝(Yuanbao)和Gemini模型
-- ✅ **图片分析** - 支持图片URL和Base64数据
-- ✅ **图片生成** - AI生成各种风格的图片
-- ✅ **深度研究** - 支持启用深度研究模式
+- ✅ **Python 3.8+** - 支持Python 3.8及以上版本
 - ✅ **任务管理** - 支持查询任务状态和结果
+- ✅ **深度研究** - 支持启用深度研究模式
 
 ## 快速开始
 
@@ -85,7 +93,7 @@ client = AIClient()
 
 # 发起对话请求
 response = client.chat.completions.create(
-    model="yuanbao",
+    model="gemini",  # 使用Gemini模型
     messages=[
         {"role": "user", "content": "什么是SEO？"}
     ]
@@ -105,7 +113,7 @@ from ai_sdk import AIClient
 
 with AIClient() as client:
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",  # 使用Gemini模型
         messages=[
             {"role": "user", "content": "介绍一下Python"}
         ]
@@ -116,16 +124,16 @@ with AIClient() as client:
 
 ## 使用示例
 
-### 1. 简单对话
+### 1. 简单对话 ✅
 
 ```python
 from ai_sdk import AIClient
 
 with AIClient() as client:
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[
-            {"role": "user", "content": "你好"}
+            {"role": "user", "content": "1+1等于几？"}
         ]
     )
     print(response.choices[0].message.content)
@@ -143,25 +151,25 @@ with AIClient() as client:
     ]
 
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=messages
     )
     print(response.choices[0].message.content)
 ```
 
-### 3. 图片分析
+### 3. 图片分析 ✅
 
 ```python
 from ai_sdk import AIClient
 
 with AIClient() as client:
-    # 使用图片URL
+    # 使用图片URL（已测试）
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[
-            {"role": "user", "content": "请描述这张图片"}
+            {"role": "user", "content": "这张图片里有什么？"}
         ],
-        image_url="http://example.com/image.png"
+        image_url="https://picsum.photos/200/300"
     )
     print(response.choices[0].message.content)
 
@@ -172,7 +180,7 @@ with AIClient() as client:
         image_data = base64.b64encode(f.read()).decode()
 
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[
             {"role": "user", "content": "分析这张图片"}
         ],
@@ -180,20 +188,22 @@ with AIClient() as client:
     )
 ```
 
-### 4. 图片生成
+### 4. 图片生成 ✅
 
 ```python
 from ai_sdk import AIClient
 
 with AIClient() as client:
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[
-            {"role": "user", "content": "生成一张未来城市的图片"}
+            {"role": "user", "content": "生成一张可爱的小猫图片"}
         ],
         generate_image=True  # 启用图片生成
     )
+    # 返回图片URL
     print(response.choices[0].message.content)
+    # 输出示例: http://156.254.5.245:8089/generate_image/1417471850053888.png
 ```
 
 ### 5. 启用深度研究
@@ -203,11 +213,11 @@ from ai_sdk import AIClient
 
 with AIClient() as client:
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[
             {"role": "user", "content": "人工智能的未来发展"}
         ],
-        deep_research=True  # 启用深度研究
+        deep_research=True  # 启用深度研究（需要更长等待时间）
     )
     print(response.choices[0].message.content)
 ```
@@ -218,15 +228,15 @@ with AIClient() as client:
 from ai_sdk import AIClient
 
 with AIClient() as client:
-    # 使用元宝模型
+    # 使用Gemini模型（推荐）
     response1 = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[{"role": "user", "content": "介绍武汉"}]
     )
 
-    # 使用Gemini模型
+    # 使用元宝模型（需要服务端配置环境）
     response2 = client.chat.completions.create(
-        model="gemini",
+        model="yuanbao",
         messages=[{"role": "user", "content": "介绍武汉"}]
     )
 ```
@@ -245,7 +255,7 @@ from ai_sdk import (
 try:
     with AIClient() as client:
         response = client.chat.completions.create(
-            model="yuanbao",
+            model="gemini",
             messages=[{"role": "user", "content": "你好"}]
         )
 except AuthenticationError as e:
@@ -266,7 +276,7 @@ from ai_sdk import AIClient
 with AIClient() as client:
     # 创建任务
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[{"role": "user", "content": "介绍Python"}]
     )
 
@@ -275,8 +285,7 @@ with AIClient() as client:
 
     # 稍后查询任务结果
     task_result = client.tasks.retrieve(task_id)
-    print(f"任务状态: {task_result['status']}")
-    print(f"任务结果: {task_result['answer']}")
+    print(f"任务结果: {task_result}")
 ```
 
 ## 更多示例
@@ -418,8 +427,8 @@ A: 请参考API文档获取Token：https://docs.apipost.net/docs/detail/52c44bf4
 ### Q: 支持哪些模型？
 
 A: 目前支持两种模型：
-- `yuanbao` (元宝) - type=1
-- `gemini` - type=2
+- `gemini` - Google Gemini模型（推荐，已测试）
+- `yuanbao` (元宝) - 元宝模型（需要服务端配置环境）
 
 ### Q: 如何处理超时？
 
@@ -452,6 +461,23 @@ MIT License
 欢迎提交Issue和Pull Request！
 
 ## 更新日志
+
+### v0.1.1 (2025-12-19)
+
+**🔧 重要修复**
+- 修复API响应处理逻辑 - 正确实现基于`message`字段的任务状态判断
+- 修复Python 3.8兼容性 - 使用`typing.List`替代`list[]`语法
+- 更新默认API端口 - 从8089更新为8088
+
+**✅ 测试验证**
+- ✅ 生文功能测试通过
+- ✅ 生图功能测试通过
+- ✅ 理解图功能测试通过
+
+**📚 文档更新**
+- 添加详细的测试结果报告 ([test_results.md](./test_results.md))
+- 添加API差异分析文档
+- 更新所有示例使用Gemini模型
 
 ### v0.1.0 (2025-12-18)
 
