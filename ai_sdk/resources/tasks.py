@@ -3,7 +3,7 @@
 提供任务查询等功能
 """
 import logging
-from typing import TYPE_CHECKING, Optional, Dict, Any
+from typing import TYPE_CHECKING, Optional, Dict, Any, List
 
 from ..exceptions import InvalidRequestError
 
@@ -51,7 +51,7 @@ class Tasks:
 
         return data
 
-    def batch_retrieve(self, task_ids: list[str]) -> list[Dict[str, Any]]:
+    def batch_retrieve(self, task_ids: List[str]) -> List[Dict[str, Any]]:
         """
         批量查询任务结果
 

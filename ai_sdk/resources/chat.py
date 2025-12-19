@@ -104,8 +104,17 @@ class Completions:
         # 调用API
         response = self._client._post("/chatCompletion", json=request_data)
 
-        # 解析响应
-        task_id = response.get("data", {}).get("id")
+        # 检查响应格式和错误
+        code = response.get("code")
+        message = response.get("message", "")
+
+        # 如果返回错误码（成功时 code 为 0）
+        if code != 0:
+            error_msg = f"API请求失败: {message}" if message else "API请求失败"
+            raise InvalidRequestError(error_msg)
+
+        # 解析响应数据 - data 直接就是任务ID
+        task_id = response.get("data")
         if not task_id:
             raise InvalidRequestError("API响应中缺少任务ID")
 
@@ -150,26 +159,65 @@ class Completions:
                     "/chatResult", json={"id": task_id}
                 )
 
-                data = result_response.get("data", {})
-                status = data.get("status")
+                # 获取响应字段
+                code = result_response.get("code")
+                message = result_response.get("message", "")
+                answer = result_response.get("answer", "")
 
-                # 检查status字段是否存在
-                if status is None:
-                    logger.warning(f"Task {task_id} response missing status field")
+                # 检查API调用是否成功
+                if code != 0:
+                    # code != 0 表示API调用失败（不是任务失败）
+                    logger.warning(f"API call failed (code={code}): {message}")
                     time.sleep(interval)
                     continue
 
-                # 检查任务完成（字符串或数字格式）
-                if status == "completed" or status == 2:
-                    # 任务完成
-                    content = data.get("answer")
-                    if content is None:
-                        logger.warning(f"Task {task_id} completed but missing 'answer' field")
-                        content = ""
+                # code == 0，通过 message 判断任务状态
 
-                    logger.info(f"Task {task_id} completed")
+                # 1. 检查任务失败
+                if message == "AI任务处理失败":
+                    error_msg = answer if answer else "任务执行失败"
+                    logger.error(f"Task {task_id} failed: {error_msg}")
+                    raise InvalidRequestError(f"任务执行失败: {error_msg}")
 
-                    # 构造ChatCompletion响应
+                # 2. 检查任务完成
+                if message == "AI任务处理完成":
+                    # 验证是否有有效答案（根据文档：长度>10）
+                    has_result = bool(answer and answer.strip() and len(answer.strip()) > 10)
+                    if has_result:
+                        logger.info(f"Task {task_id} completed successfully")
+                        # 构造ChatCompletion响应
+                        return ChatCompletion(
+                            id=str(task_id),
+                            object="chat.completion",
+                            created=get_timestamp(),
+                            model=model,
+                            choices=[
+                                Choice(
+                                    index=0,
+                                    message=ChatMessage(role="assistant", content=answer),
+                                    finish_reason="stop",
+                                )
+                            ],
+                            usage=Usage(
+                                prompt_tokens=0, completion_tokens=0, total_tokens=0
+                            ),
+                        )
+                    else:
+                        logger.warning(f"Task {task_id} completed but answer is empty or too short")
+                        # 可能需要继续等待
+                        time.sleep(interval)
+                        continue
+
+                # 3. 任务处理中（"AI任务待处理" 或 "AI任务处理中"）
+                if "处理中" in message or "待处理" in message:
+                    logger.debug(f"Task {task_id}: {message}, retry {retry + 1}/{max_retries}")
+                    time.sleep(interval)
+                    continue
+
+                # 4. 兜底：有答案就返回（文档中提到的情况）
+                has_result = bool(answer and answer.strip() and len(answer.strip()) > 10)
+                if has_result:
+                    logger.info(f"Task {task_id} has result (message: {message})")
                     return ChatCompletion(
                         id=str(task_id),
                         object="chat.completion",
@@ -178,7 +226,7 @@ class Completions:
                         choices=[
                             Choice(
                                 index=0,
-                                message=ChatMessage(role="assistant", content=content),
+                                message=ChatMessage(role="assistant", content=answer),
                                 finish_reason="stop",
                             )
                         ],
@@ -187,24 +235,9 @@ class Completions:
                         ),
                     )
 
-                # 检查任务失败
-                elif status == "failed" or status == 3:
-                    # 任务失败
-                    error_msg = data.get("error") or data.get("message") or "任务执行失败"
-                    logger.error(f"Task {task_id} failed: {error_msg}")
-                    raise InvalidRequestError(f"任务执行失败: {error_msg}")
-
-                # 处理中状态（pending, processing, running等）
-                elif status in ["pending", "processing", "running", 0, 1]:
-                    logger.debug(
-                        f"Task {task_id} status: {status}, retry {retry + 1}/{max_retries}"
-                    )
-                    time.sleep(interval)
-
-                # 未知状态
-                else:
-                    logger.warning(f"Task {task_id} unknown status: {status}, will retry")
-                    time.sleep(interval)
+                # 5. 未知状态，继续等待
+                logger.warning(f"Task {task_id} unknown message: {message}, will retry")
+                time.sleep(interval)
 
             except InvalidRequestError:
                 # 请求参数错误，立即抛出，不重试

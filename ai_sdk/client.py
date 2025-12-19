@@ -67,7 +67,7 @@ class AIClient:
             AuthenticationError: Token未提供或无效
         """
         # 默认的 API base URL
-        DEFAULT_BASE_URL = "http://156.254.5.245:8089/api/v1"
+        DEFAULT_BASE_URL = "http://156.254.5.245:8088/api/v1"
 
         # 获取配置
         self.api_token = api_token or os.getenv("AI_API_TOKEN")
