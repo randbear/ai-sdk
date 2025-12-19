@@ -49,3 +49,19 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Temporary docs (development process)
+*_GUIDE.md
+*_SUMMARY.md
+*_FIXES.md
+*_SETUP.md
+PUBLIC_VS_PRIVATE.md
+ANSWER_*.md
+
+# Browser/MCP temporary data
+.playwright-mcp/
+.mcp/
+
+# Test scripts
+test_api_endpoints.sh
+verify_installation.py
