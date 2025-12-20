@@ -3,6 +3,7 @@ Chat资源模块
 实现类似OpenAI的chat.completions接口
 """
 import logging
+import time
 from typing import TYPE_CHECKING, List, Optional
 
 from ..types.chat import (
@@ -19,6 +20,7 @@ from .._utils import (
 )
 from ..exceptions import (
     InvalidRequestError,
+    RateLimitError,
     APIConnectionError,
     TimeoutError as AITimeoutError,
     AIAPIError,
@@ -126,8 +128,57 @@ class Completions:
 
         logger.info(f"Chat completion created, task_id: {task_id_int}")
 
-        # 等待结果（轮询）
-        return self._wait_for_result(task_id_int, model)
+        # 等待结果（轮询，带重试机制）
+        return self._wait_for_result_with_retry(task_id_int, model)
+
+    def _wait_for_result_with_retry(
+        self, task_id: int, model: str
+    ) -> ChatCompletion:
+        """
+        带重试机制的任务等待
+
+        Args:
+            task_id: 任务ID
+            model: 模型名称
+
+        Returns:
+            ChatCompletion对象
+
+        Raises:
+            RateLimitError: 达到限流限制
+            其他异常: 任务执行失败
+        """
+        max_retry_attempts = self._client.max_retries
+        retry_on_rate_limit = self._client.retry_on_rate_limit
+        retry_delay = self._client.retry_delay
+
+        for attempt in range(max_retry_attempts + 1):
+            try:
+                # 尝试等待结果
+                return self._wait_for_result(task_id, model)
+
+            except RateLimitError as e:
+                # 如果不启用限流重试，或已达最大重试次数，直接抛出
+                if not retry_on_rate_limit or attempt >= max_retry_attempts:
+                    logger.error(f"Rate limit reached, no more retries")
+                    raise
+
+                # 计算退避时间（指数退避）
+                wait_time = retry_delay * (2**attempt)
+                logger.warning(
+                    f"⚠️  遇到限流错误，{wait_time:.1f}秒后进行第 {attempt + 1}/{max_retry_attempts} 次重试..."
+                )
+                logger.warning(f"原始错误: {e.response.get('original_error') if e.response else 'unknown'}")
+
+                # 等待后重试
+                time.sleep(wait_time)
+
+            except Exception:
+                # 其他错误不重试，直接抛出
+                raise
+
+        # 理论上不会到这里
+        raise RateLimitError("达到最大重试次数，请求仍然失败")
 
     def _wait_for_result(
         self, task_id: int, model: str, max_retries: int = 60, interval: int = 2
@@ -177,6 +228,19 @@ class Completions:
                 if message == "AI任务处理失败":
                     error_msg = answer if answer else "任务执行失败"
                     logger.error(f"Task {task_id} failed: {error_msg}")
+
+                    # 识别限流错误
+                    if (
+                        "账号达到使用限制" in error_msg
+                        or "限制" in error_msg
+                        or "quota" in error_msg.lower()
+                        or "rate limit" in error_msg.lower()
+                    ):
+                        raise RateLimitError(
+                            message=error_msg,
+                            response={"task_id": task_id, "original_error": error_msg},
+                        )
+
                     raise InvalidRequestError(f"任务执行失败: {error_msg}")
 
                 # 2. 检查任务完成

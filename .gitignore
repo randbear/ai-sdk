@@ -65,3 +65,9 @@ ANSWER_*.md
 # Test scripts
 test_api_endpoints.sh
 verify_installation.py
+test_*.py
+*_test_output.md
+*_output.md
+
+# Development docs
+RATE_LIMIT_IMPROVEMENT.md

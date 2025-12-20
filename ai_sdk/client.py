@@ -54,6 +54,9 @@ class AIClient:
         api_token: Optional[str] = None,
         base_url: Optional[str] = None,
         timeout: int = 30,
+        max_retries: int = 0,
+        retry_on_rate_limit: bool = False,
+        retry_delay: float = 5.0,
     ):
         """
         初始化AI客户端
@@ -62,6 +65,9 @@ class AIClient:
             api_token: API Token，如果不提供则从环境变量AI_API_TOKEN读取
             base_url: API基础URL（可选），默认使用内置的服务地址
             timeout: 请求超时时间（秒），默认30秒
+            max_retries: 最大重试次数，默认0（不重试）
+            retry_on_rate_limit: 遇到限流错误时是否自动重试，默认False
+            retry_delay: 重试延迟基数（秒），使用指数退避策略，默认5.0秒
 
         Raises:
             AuthenticationError: Token未提供或无效
@@ -77,6 +83,9 @@ class AIClient:
             DEFAULT_BASE_URL
         ).rstrip("/")
         self.timeout = timeout
+        self.max_retries = max_retries
+        self.retry_on_rate_limit = retry_on_rate_limit
+        self.retry_delay = retry_delay
 
         # 验证配置
         if not self.api_token:
