@@ -71,3 +71,6 @@ test_*.py
 
 # Development docs
 RATE_LIMIT_IMPROVEMENT.md
+
+# API documentation with sensitive info (contains API token)
+OpenAI协议接口完整文档.md
