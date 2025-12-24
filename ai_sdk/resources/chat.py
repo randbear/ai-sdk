@@ -46,6 +46,7 @@ class Completions:
         image_data: Optional[str] = None,
         deep_research: bool = False,
         generate_image: bool = False,
+        priority: int = 0,
         **kwargs,
     ) -> ChatCompletion:
         """
@@ -58,6 +59,7 @@ class Completions:
             image_data: 图片Base64数据（可选）
             deep_research: 是否进行深度研究，默认False
             generate_image: 是否生成图片，默认False
+            priority: 任务优先级，默认0
             **kwargs: 其他参数
 
         Returns:
@@ -98,6 +100,7 @@ class Completions:
             "imageData": image_data or "",
             "deepResearch": 1 if deep_research else 0,
             "generateImage": 1 if generate_image else 0,
+            "priority": priority,
         }
 
         logger.info(f"Creating chat completion with model: {model}")
@@ -129,10 +132,10 @@ class Completions:
         logger.info(f"Chat completion created, task_id: {task_id_int}")
 
         # 等待结果（轮询，带重试机制）
-        return self._wait_for_result_with_retry(task_id_int, model)
+        return self._wait_for_result_with_retry(task_id_int, model, generate_image)
 
     def _wait_for_result_with_retry(
-        self, task_id: int, model: str
+        self, task_id: int, model: str, is_image_generation: bool = False
     ) -> ChatCompletion:
         """
         带重试机制的任务等待
@@ -140,6 +143,7 @@ class Completions:
         Args:
             task_id: 任务ID
             model: 模型名称
+            is_image_generation: 是否为图片生成任务
 
         Returns:
             ChatCompletion对象
@@ -152,10 +156,21 @@ class Completions:
         retry_on_rate_limit = self._client.retry_on_rate_limit
         retry_delay = self._client.retry_delay
 
+        # 图片生成使用不同的轮询参数
+        if is_image_generation:
+            max_retries = 100  # 图片生成：100次重试
+            interval = 10      # 图片生成：10秒间隔
+            logger.info(f"Image generation mode: max_retries={max_retries}, interval={interval}s")
+        else:
+            max_retries = 60   # 普通任务：60次重试
+            interval = 2       # 普通任务：2秒间隔
+
         for attempt in range(max_retry_attempts + 1):
             try:
                 # 尝试等待结果
-                return self._wait_for_result(task_id, model)
+                return self._wait_for_result(
+                    task_id, model, max_retries, interval, is_image_generation
+                )
 
             except RateLimitError as e:
                 # 如果不启用限流重试，或已达最大重试次数，直接抛出
@@ -181,7 +196,8 @@ class Completions:
         raise RateLimitError("达到最大重试次数，请求仍然失败")
 
     def _wait_for_result(
-        self, task_id: int, model: str, max_retries: int = 60, interval: int = 2
+        self, task_id: int, model: str, max_retries: int = 60, interval: int = 2,
+        is_image_generation: bool = False
     ) -> ChatCompletion:
         """
         等待任务完成并获取结果
@@ -191,6 +207,7 @@ class Completions:
             model: 模型名称
             max_retries: 最大重试次数，默认60次
             interval: 重试间隔（秒），默认2秒
+            is_image_generation: 是否为图片生成任务，默认False
 
         Returns:
             ChatCompletion对象
@@ -202,6 +219,11 @@ class Completions:
         import time
 
         logger.info(f"Waiting for task result: {task_id}")
+
+        # 如果是图片生成任务，首次查询前等待30秒
+        if is_image_generation and max_retries > 0:
+            logger.info(f"Image generation task detected, waiting 30 seconds before first check...")
+            time.sleep(30)
 
         for retry in range(max_retries):
             try:

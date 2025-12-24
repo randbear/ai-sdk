@@ -46,10 +46,16 @@ class Tasks:
 
         response = self._client._post("/chatResult", json={"id": task_id_int})
 
-        data = response.get("data", {})
-        logger.debug(f"Task {task_id} data: {data}")
+        # API 响应格式: {"code": 0, "message": "AI任务处理完成", "answer": "..."}
+        # 任务状态在 message 字段，结果在 answer 字段
+        result = {
+            "code": response.get("code"),
+            "message": response.get("message", ""),
+            "answer": response.get("answer", ""),
+        }
+        logger.debug(f"Task {task_id} result: {result}")
 
-        return data
+        return result
 
     def batch_retrieve(self, task_ids: List[str]) -> List[Dict[str, Any]]:
         """
