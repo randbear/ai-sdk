@@ -1,31 +1,40 @@
 """
 AI SDK - 兼容OpenAI SDK的AI API客户端
 
-示例用法:
+同步客户端用法:
     ```python
     from ai_sdk import AIClient
 
-    # 初始化客户端
-    client = AIClient(
-        api_token="spsw.your_token",
-        base_url="http://your_server/api/v1"
-    )
+    client = AIClient(api_token="spsw.your_token")
 
-    # 发起chat请求
     response = client.chat.completions.create(
-        model="yuanbao",
+        model="gemini",
         messages=[
+            {"role": "system", "content": "You are helpful."},
             {"role": "user", "content": "什么是SEO?"}
         ]
     )
-
     print(response.choices[0].message.content)
+    ```
+
+异步客户端用法:
+    ```python
+    from ai_sdk import AsyncAIClient
+
+    async def main():
+        client = AsyncAIClient(model="gemini")
+        response = await client.generate(
+            system="You are helpful.",
+            user="什么是SEO?"
+        )
+        print(response)
     ```
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .client import AIClient
+from .async_client import AsyncAIClient, LLMResponse
 from .exceptions import (
     AIAPIError,
     AuthenticationError,
@@ -41,12 +50,21 @@ from .types import (
     Choice,
     Usage,
 )
+from .helpers import (
+    extract_markdown,
+    extract_json,
+    estimate_cost,
+    count_tokens_approx,
+    truncate_to_tokens,
+)
 
 __all__ = [
     # 版本
     "__version__",
     # 客户端
     "AIClient",
+    "AsyncAIClient",
+    "LLMResponse",
     # 异常
     "AIAPIError",
     "AuthenticationError",
@@ -60,4 +78,10 @@ __all__ = [
     "ChatCompletionRequest",
     "Choice",
     "Usage",
+    # 辅助函数
+    "extract_markdown",
+    "extract_json",
+    "estimate_cost",
+    "count_tokens_approx",
+    "truncate_to_tokens",
 ]

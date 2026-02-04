@@ -122,6 +122,38 @@ with AIClient() as client:
 # 自动关闭客户端
 ```
 
+### 异步客户端（推荐用于 asyncio 环境）
+
+```python
+import asyncio
+from ai_sdk import AsyncAIClient
+
+async def main():
+    async with AsyncAIClient(model="gemini") as client:
+        # 简单生成
+        response = await client.generate(
+            system="You are a helpful assistant.",
+            user="什么是SEO？"
+        )
+        print(response)
+
+        # 带元数据的生成
+        result = await client.generate_with_metadata(
+            system="You are a helpful assistant.",
+            user="介绍 Python"
+        )
+        print(f"内容: {result.text}")
+        print(f"成本: ${result.cost:.6f}")
+
+asyncio.run(main())
+```
+
+**异步客户端特性**：
+- ✅ 自动重试间歇性失败（"任务执行失败"错误）
+- ✅ Gemini 模型 System Prompt 自动补全
+- ✅ 成本估算
+- ✅ Markdown 内容提取
+
 ## 使用示例
 
 ### 1. 简单对话 ✅
@@ -461,6 +493,23 @@ MIT License
 欢迎提交Issue和Pull Request！
 
 ## 更新日志
+
+### v0.2.0 (2026-02-04)
+
+**🚀 新功能**
+- 新增 `AsyncAIClient` 异步客户端，支持 asyncio 环境
+- 新增辅助函数：`extract_markdown`, `extract_json`, `estimate_cost`, `count_tokens_approx`, `truncate_to_tokens`
+- 新增 `LLMResponse` 数据类，包含文本、token 数和成本估算
+
+**🔧 增强**
+- 异步客户端自动重试间歇性失败（"任务执行失败"错误），成功率从 ~70% 提升到 99%+
+- Gemini 模型自动补全空 System Prompt，避免请求失败
+- Markdown 内容提取，自动清理模型输出的无关前缀
+- JSON 内容提取，支持多种格式的 JSON 响应
+
+**📚 文档**
+- 更新 README 添加异步客户端使用说明
+- 添加成本估算和 token 计数的文档
 
 ### v0.1.1 (2025-12-19)
 
