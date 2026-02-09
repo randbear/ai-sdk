@@ -158,8 +158,8 @@ class Completions:
 
         # 图片生成使用不同的轮询参数
         if is_image_generation:
-            max_retries = 100  # 图片生成：100次重试
-            interval = 10      # 图片生成：10秒间隔
+            max_retries = 60   # 图片生成：60次重试
+            interval = 60      # 图片生成：60秒间隔（最长等60分钟）
             logger.info(f"Image generation mode: max_retries={max_retries}, interval={interval}s")
         else:
             max_retries = 60   # 普通任务：60次重试
